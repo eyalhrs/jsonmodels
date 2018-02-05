@@ -8,7 +8,6 @@ from . import utilities
 
 
 class Min(object):
-
     """Validator for minimum value."""
 
     def __init__(self, minimum_value, exclusive=False):
@@ -43,7 +42,6 @@ class Min(object):
 
 
 class Max(object):
-
     """Validator for maximum value."""
 
     def __init__(self, maximum_value, exclusive=False):
@@ -78,7 +76,6 @@ class Max(object):
 
 
 class Regex(object):
-
     """Validator for regular expressions."""
 
     FLAGS = {
@@ -134,7 +131,6 @@ class Regex(object):
 
 
 class Length(object):
-
     """Validator for length."""
 
     def __init__(self, minimum_value=None, maximum_value=None):
@@ -182,7 +178,6 @@ class Length(object):
 
 
 class Enum(object):
-
     """Validator for enums."""
 
     def __init__(self, *choices):
@@ -200,3 +195,9 @@ class Enum(object):
 
     def modify_schema(self, field_schema):
         field_schema['enum'] = self.choices
+
+
+class Annotation(object):
+
+    def modify_schema(self, field_schema):
+        field_schema['$ref'] = "#/definitions/GeoJson"
