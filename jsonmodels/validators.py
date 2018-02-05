@@ -199,5 +199,8 @@ class Enum(object):
 
 class Annotation(object):
 
+    def validate(self, value):
+        return True
+
     def modify_schema(self, field_schema):
         field_schema['$ref'] = "#/definitions/GeoJson"
