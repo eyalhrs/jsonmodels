@@ -197,7 +197,7 @@ class Enum(object):
         field_schema['enum'] = self.choices
 
 
-class Annotation(object):
+class GeoJson(object):
 
     def validate(self, value):
         return True
