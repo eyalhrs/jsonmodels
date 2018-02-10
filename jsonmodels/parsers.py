@@ -4,22 +4,26 @@ import inspect
 from . import fields, builders, errors
 
 
-def to_struct(model):
+def to_struct(model, is_validate=False):
     """Cast instance of model to python structure.
 
     :param model: Model to be casted.
     :rtype: ``dict``
 
     """
-    model.validate()
+    if is_validate:
+        model.validate()
 
     resp = {}
     for _, name, field in model.iterate_with_name():
         value = field.__get__(model)
         if value is None:
             continue
-
-        value = field.to_struct(value)
+        try:
+            value = field.to_struct(value)
+        except Exception as e:
+            if is_validate:
+                raise e
         resp[name] = value
     return resp
 
@@ -87,9 +91,12 @@ def _create_primitive_field_schema(field):
     elif isinstance(field, fields.IntField):
         obj_type = 'number'
     elif isinstance(field, fields.FloatField):
-        obj_type = 'float'
+        obj_type = 'number'
     elif isinstance(field, fields.BoolField):
         obj_type = 'boolean'
+    elif isinstance(field, fields.DictField):
+        obj_type = 'object'
+
     else:
         raise errors.FieldNotSupported(
             'Field {field} is not supported!'.format(

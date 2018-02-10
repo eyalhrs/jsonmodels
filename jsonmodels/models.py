@@ -88,9 +88,9 @@ class Base(six.with_metaclass(JsonmodelMeta, object)):
             structure_name = field.structue_name(attr_name)
             yield attr_name, structure_name, field
 
-    def to_struct(self):
+    def to_struct(self, is_validate=False):
         """Cast model to Python structure."""
-        return parsers.to_struct(self)
+        return parsers.to_struct(self, is_validate)
 
     @classmethod
     def to_json_schema(cls):

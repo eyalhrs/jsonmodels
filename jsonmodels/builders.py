@@ -76,7 +76,7 @@ class ObjectBuilder(Builder):
         if self.is_definition and not self.is_root:
             self.add_definition(builder)
             [self.maybe_build(value) for _, value in self.properties.items()]
-            return '#/definitions/{name}'.format(name=self.type_name)
+            return {'$ref':'#/definitions/{name}'.format(name=self.type_name)}
         else:
             return builder.build_definition(nullable=self.nullable)
 

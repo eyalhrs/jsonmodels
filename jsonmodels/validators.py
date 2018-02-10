@@ -22,6 +22,9 @@ class Min(object):
         self.exclusive = exclusive
 
     def validate(self, value):
+        if value is None:
+            return
+
         """Validate value."""
         if self.exclusive:
             if value <= self.minimum_value:
@@ -56,6 +59,9 @@ class Max(object):
         self.exclusive = exclusive
 
     def validate(self, value):
+        if value is None:
+            return
+
         """Validate value."""
         if self.exclusive:
             if value >= self.maximum_value:
@@ -189,6 +195,8 @@ class Enum(object):
         self.choices = list(choices)
 
     def validate(self, value):
+        if value is None:
+            return
         if value not in self.choices:
             tpl = "Value '{val}' is not a valid choice."
             raise ValidationError(tpl.format(val=value))
@@ -199,8 +207,11 @@ class Enum(object):
 
 class GeoJson(object):
 
+    def __init__(self, jsonschema_ref_path):
+        self.jsonschema_ref_path = jsonschema_ref_path
+
     def validate(self, value):
         return True
 
     def modify_schema(self, field_schema):
-        field_schema['$ref'] = "#/definitions/GeoJson"
+        field_schema['$ref'] = self.jsonschema_ref_path

@@ -8,14 +8,12 @@ from dateutil.parser import parse
 from .errors import ValidationError
 from .collections import ModelCollection
 
-
 # unique marker for "no default value specified". None is not good enough since
 # it is a completely valid default value.
 NotSet = object()
 
 
 class BaseField(object):
-
     """Base class for all fields."""
 
     types = None
@@ -27,13 +25,15 @@ class BaseField(object):
             help_text=None,
             validators=None,
             default=NotSet,
-            name=None):
+            name=None,
+            is_validate=False):
         self.memory = WeakKeyDictionary()
         self.required = required
         self.help_text = help_text
         self.nullable = nullable
         self._assign_validators(validators)
         self.name = name
+        self.is_validate = is_validate
         self._validate_name()
         if default is not NotSet:
             self.validate(default)
@@ -49,9 +49,13 @@ class BaseField(object):
         self.validators = validators or []
 
     def __set__(self, instance, value):
-        self._finish_initialization(type(instance))
-        value = self.parse_value(value)
-        self.validate(value)
+        try:
+            self._finish_initialization(type(instance))
+            value = self.parse_value(value)
+            self.validate(value)
+        except Exception as e:
+            if self.is_validate:
+                raise e
         self.memory[instance._cache_key] = value
 
     def __get__(self, instance, owner=None):
@@ -76,6 +80,8 @@ class BaseField(object):
         self.validate(value)
 
     def validate(self, value):
+        if not self.is_validate:
+            return
         self._check_types()
         self._validate_against_types(value)
         self._check_against_required(value)
@@ -142,14 +148,12 @@ class BaseField(object):
 
 
 class StringField(BaseField):
-
     """String field."""
 
     types = six.string_types
 
 
 class IntField(BaseField):
-
     """Integer field."""
 
     types = (int,)
@@ -163,14 +167,12 @@ class IntField(BaseField):
 
 
 class FloatField(BaseField):
-
     """Float field."""
 
     types = (float, int)
 
 
 class BoolField(BaseField):
-
     """Bool field."""
 
     types = (bool,)
@@ -182,12 +184,11 @@ class BoolField(BaseField):
 
 
 class ListField(BaseField):
-
     """List field."""
 
     types = (list,)
 
-    def __init__(self, items_types=None, *args, **kwargs):
+    def __init__(self, items_types=None, is_validate=False, *args, **kwargs):
         """Init.
 
         `ListField` is **always not required**. If you want to control number
@@ -195,7 +196,7 @@ class ListField(BaseField):
 
         """
         self._assign_types(items_types)
-        super(ListField, self).__init__(*args, **kwargs)
+        super(ListField, self).__init__(is_validate=is_validate, *args, **kwargs)
         self.required = False
 
     def get_default_value(self):
@@ -231,6 +232,9 @@ class ListField(BaseField):
             self.validate_single_value(item)
 
     def validate_single_value(self, item):
+        if not self.is_validate:
+            return
+
         if len(self.items_types) == 0:
             return
 
@@ -289,12 +293,11 @@ class ListField(BaseField):
 
 
 class EmbeddedField(BaseField):
-
     """Field for embedded models."""
 
-    def __init__(self, model_types, *args, **kwargs):
+    def __init__(self, model_types, is_validate=False, *args, **kwargs):
         self._assign_model_types(model_types)
-        super(EmbeddedField, self).__init__(*args, **kwargs)
+        super(EmbeddedField, self).__init__(is_validate=is_validate, *args, **kwargs)
 
     def _assign_model_types(self, model_types):
         if not isinstance(model_types, (list, tuple)):
@@ -348,7 +351,6 @@ class EmbeddedField(BaseField):
 
 
 class _LazyType(object):
-
     def __init__(self, path):
         self.path = path
 
@@ -394,7 +396,6 @@ def _import(module_name, type_name):
 
 
 class TimeField(StringField):
-
     """Time field."""
 
     types = (datetime.time,)
@@ -425,7 +426,6 @@ class TimeField(StringField):
 
 
 class DateField(StringField):
-
     """Date field."""
 
     types = (datetime.date,)
@@ -457,7 +457,6 @@ class DateField(StringField):
 
 
 class DateTimeField(StringField):
-
     """Datetime field."""
 
     types = (datetime.datetime,)
@@ -486,3 +485,7 @@ class DateTimeField(StringField):
             return parse(value)
         else:
             return None
+
+
+class DictField(BaseField):
+    types = (dict,)
