@@ -207,11 +207,12 @@ class Enum(object):
 
 class GeoJson(object):
 
-    def __init__(self, jsonschema_ref_path):
-        self.jsonschema_ref_path = jsonschema_ref_path
+    def __init__(self, properties):
+        self.properties = properties
 
     def validate(self, value):
         return True
 
     def modify_schema(self, field_schema):
-        field_schema['$ref'] = self.jsonschema_ref_path
+        field_schema.clear()
+        field_schema.update(self.properties)
