@@ -17,7 +17,7 @@ def to_struct(model, is_validate=False):
     resp = {}
     for _, name, field in model.iterate_with_name():
         value = field.__get__(model)
-        if value is None:
+        if field.required and value is None:
             continue
         try:
             value = field.to_struct(value)
