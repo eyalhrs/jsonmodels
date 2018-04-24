@@ -82,8 +82,7 @@ class ObjectBuilder(Builder):
 
     @property
     def type_name(self):
-        module_name = '{module}.{name}'.format(
-            module=self.type.__module__,
+        module_name = '{name}'.format(
             name=self.type.__name__,
         )
         return module_name.replace('.', '_').lower()
