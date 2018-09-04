@@ -171,6 +171,13 @@ class FloatField(BaseField):
 
     types = (float, int)
 
+    def parse_value(self, value):
+        """Cast value to `float`, e.g. from string, long or numpy"""
+        parsed = super(FloatField, self).parse_value(value)
+        if parsed is None:
+            return parsed
+        return float(parsed)
+
 
 class BoolField(BaseField):
     """Bool field."""
